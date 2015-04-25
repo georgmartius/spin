@@ -333,6 +333,38 @@ class interface(QtGui.QWidget):
             )
             sys.exit()
 
+    def stylus_orientation(
+            self,
+            orientation = None
+            ):
+        if "stylus" in self.deviceNames:
+            wacomRotation = {
+                "left":     "ccw",
+                "right":    "cw",
+                "inverted": "half",
+                "normal":   "none"
+                    }
+            if wacomRotation.has_key(orientation):
+                log.info("change stylus to {orientation}".format(
+                    orientation = orientation
+                ))
+                engage_command(
+                        "xsetwacom set \"{deviceName}\" rotate {direction}".format(
+                        deviceName = self.deviceNames["stylus"],
+                        direction = wacomRotation[orientation]
+                    )
+                )
+            else:
+                log.error(
+                    "unknown stylus orientation \"{orientation}\""
+                    " requested".format(
+                        orientation = orientation
+                    )
+                )
+                sys.exit()
+        else:
+            log.debug("stylus orientation unchanged")
+
     def touchscreen_orientation(
         self,
         orientation = None
@@ -655,11 +687,13 @@ class interface(QtGui.QWidget):
         if mode == "tablet":
             self.display_orientation(orientation     = "left")
             self.touchscreen_orientation(orientation = "left")
+            self.stylus_orientation(orientation      = "left")
             self.touchpad_switch(status              = "off")
             self.nipple_switch(status                = "off")
         elif mode == "laptop":
             self.display_orientation(orientation     = "normal")
             self.touchscreen_orientation(orientation = "normal")
+            self.stylus_orientation(orientation      = "normal")
             self.touchscreen_switch(status           = "on")
             self.touchpad_orientation(orientation    = "normal")
             self.touchpad_switch(status              = "on")
@@ -667,6 +701,7 @@ class interface(QtGui.QWidget):
         elif mode in ["left", "right", "inverted", "normal"]:
             self.display_orientation(orientation     = mode)
             self.touchscreen_orientation(orientation = mode)
+            self.stylus_orientation(orientation      = mode)
             self.touchpad_orientation(orientation    = mode)
         else:
             log.error(
