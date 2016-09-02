@@ -47,6 +47,7 @@ version = "2015-04-30T0256Z"
 
 import imp
 import urllib
+from time import sleep
 
 def smuggle(
     moduleName = None,
@@ -63,7 +64,7 @@ def smuggle(
             module = imp.new_module("module")
             exec moduleString in module.__dict__
             return(module)
-        except: 
+        except:
             raise(
                 Exception(
                     "module {moduleName} import error".format(
@@ -294,7 +295,7 @@ class interface(QtGui.QWidget):
             vbox.addStretch(1)
             for button in buttonsList:
                 vbox.addWidget(button)
-                vbox.addStretch(1)	
+                vbox.addStretch(1)
             self.setLayout(vbox)
             # window
             self.setWindowTitle("spin")
@@ -308,7 +309,7 @@ class interface(QtGui.QWidget):
         log.info("terminate {name}".format(name = name))
         self.stylus_proximity_control_switch(status = "off")
         self.display_position_control_switch(status = "off")
-        self.deleteLater() 
+        self.deleteLater()
 
     def display_orientation(
         self,
@@ -655,7 +656,7 @@ class interface(QtGui.QWidget):
             self.display_orientation(orientation     = "left")
             self.touchscreen_orientation(orientation = "left")
             self.touchpad_switch(status              = "off")
-            self.nipple_switch(status                = "off") 
+            self.nipple_switch(status                = "off")
         elif mode == "laptop":
             self.display_orientation(orientation     = "normal")
             self.touchscreen_orientation(orientation = "normal")
@@ -716,7 +717,17 @@ def engage_command(
             command = command
         ))
     else:
-        os.system(command)
+        success,i=0,0
+        while (not success and i<2):
+            if(i>0):
+                log.info("Retry last command..")
+                sleep(1)
+            try:
+                success=(os.system(command)==0)
+            except:
+                i=3
+            i=i+1
+
 
 def mean_list(
     lists = None
@@ -726,7 +737,7 @@ def mean_list(
 class AccelerationVector(list):
 
     def __init__(self):
-        list.__init__(self)  
+        list.__init__(self)
         # Access the IIO interface to the accelerometer.
         devicesDirectories = glob.glob("/sys/bus/iio/devices/iio:device*")
         for directory in devicesDirectories:
